@@ -97,7 +97,7 @@ def main():
     elif method == 'invert_nodata':
         gs.message("Inverting data/no-data...")
         r.mapcalc(
-            '{x} = if({y}, null(), 1)'.format(x=output, y=raster))
+            '{x} = if(isnull({y}), 1, null())'.format(x=output, y=raster))
 
     elif method == 'percentile_stretch':
         
