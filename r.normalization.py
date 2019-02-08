@@ -64,7 +64,7 @@ def main():
     output = options['output']
     percentiles = options['percentiles']
     method = options['method']
-    
+
     # remove mapset from output name in case of overwriting existing map
     output = output.split('@')[0]
 
@@ -72,7 +72,7 @@ def main():
     gs.message("Retrieving univariate statistics...")
     stats = parse_key_val(
         r.univar(map=raster, flags='g', stdout_=PIPE).outputs.stdout, sep='=')
-    
+
     # transformation methods
     if method == 'normalization':
         gs.message("Normalizing the input raster...")
@@ -87,7 +87,7 @@ def main():
             '{x} = float(({raster} - {mean}) / {std})'.format(
                     x=output, raster=raster,
                     mean=stats['mean'], std=stats['stddev']))
-        
+
     elif method == 'inversion':
         gs.message("Inverting the input raster...")
         r.mapcalc(
@@ -100,22 +100,22 @@ def main():
             '{x} = if(isnull({y}), 1, null())'.format(x=output, y=raster))
 
     elif method == 'percentile_stretch':
-        
+
         # split string and convert to float or integer
         percentiles = percentiles.split(',')
         percentiles = list(map(float, percentiles))
-    
+
         if len(percentiles) != 2:
             gs.fatal('Need to specify lower and upper percentiles for linear stretch  (comma separated)')
 
         gs.message("Performing linear percentile stretch...")
         p = r.quantile(
-            input=raster, percentiles=percentiles, quiet=True, 
+            input=raster, percentiles=percentiles, quiet=True,
             stdout_=PIPE).outputs.stdout
-        
+
         pmin = float(p.splitlines()[0].split(':')[2])
         pmax = float(p.splitlines()[1].split(':')[2])
-        
+
         r.mapcalc(
             '{x} = if({Pin}<{c},{a}, if({Pin}>{d}, {b}, ({Pin}-{c}) * ({b}-{a}) / ({d}-{c}) + {a}))'.format(
                 x=output, Pin=raster,
